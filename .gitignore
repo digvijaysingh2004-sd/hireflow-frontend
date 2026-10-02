@@ -1,1 +1,37 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Production / Build output
+dist
+dist-ssr
+
+# Testing / Coverage
+coverage
+*.lcov
+
+# Environment files (ONLY .env.example IS ALLOWED ON GITHUB)
+.env*
+!.env.example
+
+# Markdown documentation (ONLY README.md IS ALLOWED ON GITHUB)
+*.md
+!README.md
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvsopt
+*.njsproj
+*.sw?
