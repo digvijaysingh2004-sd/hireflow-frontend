@@ -22,10 +22,20 @@ export interface LoginResponse {
   user: User;
 }
 
-export interface ApiResponse<T> {
-  data?: T;
-  message?: string;
-  success: boolean;
+export interface ApiEnvelope<T> {
+  data: T;
+  meta?: {
+    traceId?: string;
+    cache?: string;
+    idempotent?: boolean;
+  };
+  pagination?: {
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+    hasNextPage: boolean;
+  };
 }
 
 export interface ProblemDetails {

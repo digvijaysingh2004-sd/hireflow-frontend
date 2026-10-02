@@ -95,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       const res = await authApi.verifyOtp(data);
-      if (res.success || res.message) {
+      if (res.isEmailVerified || res.message) {
         if (user) {
           const updatedUser = { ...user, isEmailVerified: true };
           setUser(updatedUser);
@@ -122,7 +122,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setIsLoading(true);
     try {
-      await authApi.logout();
+      const currentRefreshToken = authStorage.getRefreshToken();
+      await authApi.logout(currentRefreshToken || undefined);
     } finally {
       authStorage.clearSession();
       setUser(null);
