@@ -11,15 +11,22 @@ import {
   Building2,
   Sparkles,
   ChevronRight,
+  Inbox,
 } from 'lucide-react';
-import { MOCK_JOBS } from '../features/jobs/mockData';
+import { useJobsQuery } from '../features/jobs/hooks/useJobsQuery';
 import { JobCard } from '../features/jobs/components/JobCard';
 import { useAuth } from '../features/auth/hooks/useAuth';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
-  const featuredJobs = MOCK_JOBS.slice(0, 3);
+  const { data: featuredData, isLoading: isFeaturedLoading } = useJobsQuery({
+    page: 1,
+    pageSize: 3,
+    status: 'Published',
+    sort: '-publishedAt',
+  });
 
+  const featuredJobs = featuredData?.data || [];
   const isRecruiter = user?.roles?.some((r) => r === 'Recruiter' || r === 'Admin' || r === 'HiringManager');
 
   return (
@@ -165,7 +172,7 @@ export const HomePage: React.FC = () => {
             <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
               Featured Opportunities
             </h2>
-            <p className="text-slate-500 text-sm">Top hand-picked positions open for applications right now.</p>
+            <p className="text-slate-500 text-sm">Top published positions from our Hiring Microservice.</p>
           </div>
           <Link
             to="/jobs"
@@ -175,11 +182,28 @@ export const HomePage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredJobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
+        {isFeaturedLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, idx) => (
+              <div key={idx} className="bg-white rounded-xl border border-slate-200 p-6 space-y-3 animate-pulse">
+                <div className="h-5 bg-slate-200 rounded w-3/4" />
+                <div className="h-4 bg-slate-100 rounded w-1/2" />
+                <div className="h-12 bg-slate-100 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : featuredJobs.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-slate-500">
+            <Inbox className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+            <p className="text-sm font-medium">No published jobs currently available from API backend.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredJobs.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* How HireFlow Works Section */}
@@ -241,7 +265,7 @@ export const HomePage: React.FC = () => {
         </div>
         <Link
           to="/jobs"
-          className="bg-white text-slate-900 hover:bg-slate-100 font-bold px-6 py-3 rounded-xl text-xs shrink-0 transition-colors shadow-sm cursor-pointer"
+          className="bg-white text-slate-900 hover:bg-slate-100 font-bold px-6 py-3 rounded-xl text-xs shrink-0 transition-colors shadow-xs cursor-pointer"
         >
           Browse All Jobs Now
         </Link>

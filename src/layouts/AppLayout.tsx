@@ -29,7 +29,6 @@ export const AppLayout: React.FC = () => {
     ? [
         { label: 'Hiring Dashboard', path: '/recruiter/dashboard', icon: Activity },
         { label: 'Jobs Table', path: '/recruiter/jobs', icon: Briefcase },
-        { label: 'Post New Job', path: '/recruiter/jobs/new', icon: PlusCircle },
         { label: 'Applicants', path: '/recruiter/applications', icon: UserCheck },
         { label: 'Scheduled Interviews', path: '/recruiter/interviews', icon: Calendar },
         ...(isAdmin
