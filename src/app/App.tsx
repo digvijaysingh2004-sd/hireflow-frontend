@@ -8,6 +8,8 @@ import { VerifyOtpPage } from '../features/auth/pages/VerifyOtpPage';
 import { ForgotPasswordPage } from '../features/auth/pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../features/auth/pages/ResetPasswordPage';
 import { UnauthorizedPage } from '../features/auth/pages/UnauthorizedPage';
+import { JobsPage } from '../features/jobs/pages/JobsPage';
+import { JobDetailPage } from '../features/jobs/pages/JobDetailPage';
 import { PublicOnly } from '../routes/guards/PublicOnly';
 import { RequireAuth } from '../routes/guards/RequireAuth';
 import { RequireRole } from '../routes/guards/RequireRole';
@@ -32,7 +34,7 @@ export const App: React.FC = () => {
                 Welcome to HireFlow
               </h1>
               <p className="text-slate-600 mb-6 max-w-2xl">
-                Phase 3 Infrastructure Active: Reusable UI Component Library (Buttons, Inputs, Selects, Modals, Drawers, DataTables, Badges, Toasts) and Layout Shells (PublicLayout & AppLayout).
+                Phase 4 Public Job Portal Active: Integrated with backend Hiring Microservice contracts (`POST /api/v1/jobs`, `GET /api/v1/jobs`, `GET /api/v1/jobs/:id`). Debounced search, filters, job detail view, and application submission with Idempotency Key.
               </p>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -49,9 +51,9 @@ export const App: React.FC = () => {
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <h3 className="font-semibold text-slate-800 text-sm mb-1">Phase 3 Status</h3>
+                  <h3 className="font-semibold text-slate-800 text-sm mb-1">Phase 4 Status</h3>
                   <p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Component Library Ready
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Public Job Portal Live
                   </p>
                 </div>
               </div>
@@ -59,15 +61,8 @@ export const App: React.FC = () => {
           }
         />
 
-        <Route
-          path="/jobs"
-          element={
-            <div className="bg-white p-8 rounded-xl border border-slate-200">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Job Search & Opportunities</h2>
-              <p className="text-slate-600 text-sm">Public job listings search & filters will be populated in Phase 4.</p>
-            </div>
-          }
-        />
+        <Route path="/jobs" element={<JobsPage />} />
+        <Route path="/jobs/:id" element={<JobDetailPage />} />
 
         {/* Public Only Guest Routes */}
         <Route element={<PublicOnly />}>
