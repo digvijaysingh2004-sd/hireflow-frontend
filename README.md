@@ -55,12 +55,12 @@
 
 - [x] **Phase 1: Project Setup & Base Infrastructure** — Vite React TS initialization, Tailwind v4, Axios microservice clients with `X-Correlation-ID`, TanStack Query, `vercel.json` SPA rules.
 - [x] **Phase 2: Authentication System & Session State** — JWT token management, Axios 401 refresh token rotation interceptor, Auth Context, Route Guards (`RequireAuth`, `RequireRole`), Login, Candidate Registration, Email OTP Verification, and Password Reset screens.
-- [ ] **Phase 3: Core UI Framework & Shared Components**
-- [ ] **Phase 4: Public Job Portal & Search**
-- [ ] **Phase 5: Candidate Portal & Applications Workflow**
-- [ ] **Phase 6: Recruiter & Hiring Manager Portal**
-- [ ] **Phase 7: Admin Portal & System Audit**
-- [ ] **Phase 8: Testing, Polish & Vercel Deployment**
+- [x] **Phase 3: Core UI Framework & Shared Components** — Enterprise UI primitives (Button, Input, Select, Badge, Modal, Drawer, DataTable, Toast Context) and layout shells (Public & App navigation sidebars).
+- [x] **Phase 4: Public Job Portal & Search** — Public job listings (`/jobs`), debounced search, filters (location, mode, employment type), job details (`/jobs/:id`), and candidate application submission modal.
+- [x] **Phase 5: Candidate Portal & Applications Workflow** — My Applications table (`/candidate/applications`), stage history timeline view (`/candidate/applications/:id`), withdraw modal, and Scheduled Interviews calendar (`/candidate/interviews`).
+- [x] **Phase 6: Recruiter & Hiring Manager Portal** — Hiring dashboard KPIs (`/recruiter/dashboard`), Jobs table (`/recruiter/jobs`), Create job modal, Close job modal, Applicant screening drawer (`/recruiter/applications`), and Schedule interview modal.
+- [x] **Phase 7: Admin Portal & System Audit** — User management & role assignment (`/admin/users`) and immutable platform audit log viewer (`/admin/audit-logs`).
+- [ ] **Phase 8: Automated Tests & Vercel Live Deployment** — Vitest test suites & pushing to live production Vercel environment.
 
 ---
 
