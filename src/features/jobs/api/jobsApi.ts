@@ -5,6 +5,18 @@ import { Job, CreateJobData, JobFilterParams, JobStatistics } from '../types';
 export const jobsApi = {
   async getJobs(params?: JobFilterParams): Promise<ApiEnvelope<Job[]>> {
     const response = await hiringClient.get('/api/v1/jobs', { params });
+    if (response.data?.items && Array.isArray(response.data.items)) {
+      return {
+        data: response.data.items,
+        pagination: {
+          page: response.data.page || 1,
+          pageSize: response.data.pageSize || 10,
+          totalCount: response.data.totalCount || 0,
+          totalPages: response.data.totalPages || 1,
+          hasNextPage: !!response.data.hasNextPage,
+        },
+      };
+    }
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data;
     }

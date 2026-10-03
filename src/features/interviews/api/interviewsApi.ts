@@ -25,6 +25,18 @@ export const interviewsApi = {
 
   async getMyInterviews(params?: InterviewFilterParams): Promise<ApiEnvelope<Interview[]>> {
     const response = await hiringClient.get('/api/v1/me/interviews', { params });
+    if (response.data?.items && Array.isArray(response.data.items)) {
+      return {
+        data: response.data.items,
+        pagination: {
+          page: response.data.page || 1,
+          pageSize: response.data.pageSize || 10,
+          totalCount: response.data.totalCount || 0,
+          totalPages: response.data.totalPages || 1,
+          hasNextPage: !!response.data.hasNextPage,
+        },
+      };
+    }
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data;
     }
@@ -42,6 +54,18 @@ export const interviewsApi = {
 
   async getInterviews(params?: InterviewFilterParams): Promise<ApiEnvelope<Interview[]>> {
     const response = await hiringClient.get('/api/v1/interviews', { params });
+    if (response.data?.items && Array.isArray(response.data.items)) {
+      return {
+        data: response.data.items,
+        pagination: {
+          page: response.data.page || 1,
+          pageSize: response.data.pageSize || 10,
+          totalCount: response.data.totalCount || 0,
+          totalPages: response.data.totalPages || 1,
+          hasNextPage: !!response.data.hasNextPage,
+        },
+      };
+    }
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data;
     }
