@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Inbox } from 'lucide-react';
 export interface Column<T> {
   header: string;
   accessorKey?: keyof T;
+  accessor?: (row: T) => React.ReactNode;
   cell?: (row: T) => React.ReactNode;
   className?: string;
 }
@@ -15,6 +16,7 @@ interface DataTableProps<T> {
   emptyMessage?: string;
   page?: number;
   totalPages?: number;
+  keyExtractor?: (row: T) => string;
   onPageChange?: (page: number) => void;
   onRowClick?: (row: T) => void;
 }
@@ -26,13 +28,14 @@ export function DataTable<T extends Record<string, unknown>>({
   emptyMessage = 'No records found.',
   page = 1,
   totalPages = 1,
+  keyExtractor,
   onPageChange,
   onRowClick,
 }: DataTableProps<T>) {
   if (isLoading) {
     return (
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-        <div className="p-4 space-y-3">
+        <div data-testid="data-table-skeleton" className="p-4 space-y-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-10 bg-slate-100 rounded-lg animate-pulse" />
           ))}
@@ -63,25 +66,30 @@ export function DataTable<T extends Record<string, unknown>>({
                 </td>
               </tr>
             ) : (
-              data.map((row, rowIdx) => (
-                <tr
-                  key={rowIdx}
-                  onClick={() => onRowClick && onRowClick(row)}
-                  className={`hover:bg-slate-50/80 transition-colors ${
-                    onRowClick ? 'cursor-pointer' : ''
-                  }`}
-                >
-                  {columns.map((col, colIdx) => (
-                    <td key={colIdx} className={`px-6 py-4 text-sm text-slate-800 ${col.className || ''}`}>
-                      {col.cell
-                        ? col.cell(row)
-                        : col.accessorKey
-                        ? (row[col.accessorKey] as React.ReactNode)
-                        : null}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              data.map((row, rowIdx) => {
+                const rowKey = keyExtractor ? keyExtractor(row) : rowIdx;
+                return (
+                  <tr
+                    key={rowKey}
+                    onClick={() => onRowClick && onRowClick(row)}
+                    className={`hover:bg-slate-50/80 transition-colors ${
+                      onRowClick ? 'cursor-pointer' : ''
+                    }`}
+                  >
+                    {columns.map((col, colIdx) => (
+                      <td key={colIdx} className={`px-6 py-4 text-sm text-slate-800 ${col.className || ''}`}>
+                        {col.cell
+                          ? col.cell(row)
+                          : col.accessor
+                          ? col.accessor(row)
+                          : col.accessorKey
+                          ? (row[col.accessorKey] as React.ReactNode)
+                          : null}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>

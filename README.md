@@ -60,7 +60,7 @@
 - [x] **Phase 5: Candidate Portal & Applications Workflow** — My Applications table (`/candidate/applications`), stage history timeline view (`/candidate/applications/:id`), withdraw modal, and Scheduled Interviews calendar (`/candidate/interviews`).
 - [x] **Phase 6: Recruiter & Hiring Manager Portal** — Hiring dashboard KPIs (`/recruiter/dashboard`), Jobs table (`/recruiter/jobs`), Create job modal, Close job modal, Applicant screening drawer (`/recruiter/applications`), and Schedule interview modal.
 - [x] **Phase 7: Admin Portal & System Audit** — User management & role assignment (`/admin/users`) and immutable platform audit log viewer (`/admin/audit-logs`).
-- [ ] **Phase 8: Automated Tests & Vercel Live Deployment** — Vitest test suites & pushing to live production Vercel environment.
+- [x] **Phase 8: Automated Tests & Live Deployment Ready** — Automated Vitest unit & component test suites (17/17 tests passing), pre-deployment verification checklist, and Vercel production SPA configuration.
 
 ---
 
