@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { authStorage } from './authStorage';
+import { authStorage } from '../lib/authStorage';
 
 describe('authStorage', () => {
   beforeEach(() => {

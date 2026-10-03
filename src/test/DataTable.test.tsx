@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { DataTable, Column } from './DataTable';
+import { DataTable, Column } from '../components/ui/DataTable';
 
 interface TestItem extends Record<string, unknown> {
   id: string;

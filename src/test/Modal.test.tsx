@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
-import { Modal } from './Modal';
+import { Modal } from '../components/ui/Modal';
 
 describe('Modal Component', () => {
   it('renders modal title and children when isOpen is true', () => {
