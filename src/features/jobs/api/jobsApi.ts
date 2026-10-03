@@ -53,4 +53,21 @@ export const jobsApi = {
     const response = await hiringClient.get(`/api/v1/jobs/${jobId}/statistics`);
     return response.data.data || response.data;
   },
+
+  async getCompanies(): Promise<any[]> {
+    const response = await hiringClient.get('/api/v1/companies');
+    if (response.data?.items && Array.isArray(response.data.items)) {
+      return response.data.items;
+    }
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+    return Array.isArray(response.data) ? response.data : [];
+  },
+
+  async createCompany(data: { name: string; website?: string; description?: string }): Promise<any> {
+    const response = await hiringClient.post('/api/v1/companies', data);
+    return response.data.data || response.data;
+  },
 };
+

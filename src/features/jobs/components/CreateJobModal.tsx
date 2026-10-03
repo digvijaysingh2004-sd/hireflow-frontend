@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../components/ui/Modal';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -19,9 +19,13 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({
   onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [newCompanyName, setNewCompanyName] = useState('');
+  const [isCreatingNewCompany, setIsCreatingNewCompany] = useState(false);
   const { addToast } = useToast();
 
   const [formData, setFormData] = useState<CreateJobData>({
+    companyId: '',
     title: '',
     department: '',
     location: '',
@@ -32,7 +36,26 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({
     currency: 'USD',
     description: '',
     requirements: '',
+    skills: [],
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      loadCompanies();
+    }
+  }, [isOpen]);
+
+  const loadCompanies = async () => {
+    try {
+      const list = await jobsApi.getCompanies();
+      setCompanies(list);
+      if (list.length > 0 && !formData.companyId) {
+        setFormData((prev) => ({ ...prev, companyId: list[0].id }));
+      }
+    } catch {
+      // Ignored
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,12 +66,44 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({
 
     setLoading(true);
     try {
-      await jobsApi.createJob(formData);
+      let activeCompanyId = formData.companyId;
+
+      // If user selected to create a new company or no company exists
+      if (isCreatingNewCompany && newCompanyName.trim()) {
+        const created = await jobsApi.createCompany({
+          name: newCompanyName.trim(),
+          website: 'https://hireflow.local',
+          description: `${newCompanyName.trim()} organization`,
+        });
+        activeCompanyId = created.id || created;
+      } else if (!activeCompanyId && companies.length === 0) {
+        // Automatically create a default company so the job can be posted
+        const created = await jobsApi.createCompany({
+          name: 'HireFlow Tech',
+          website: 'https://hireflow.local',
+          description: 'Default hiring organization',
+        });
+        activeCompanyId = created.id || created;
+      } else if (!activeCompanyId && companies.length > 0) {
+        activeCompanyId = companies[0].id;
+      }
+
+      await jobsApi.createJob({
+        ...formData,
+        companyId: activeCompanyId,
+      });
+
       addToast('Job posting created successfully!', 'success');
       onSuccess();
       onClose();
     } catch (err: any) {
-      addToast(err.response?.data?.error?.message || 'Failed to create job posting', 'error');
+      const errMsg =
+        err.response?.data?.errors?.[0] ||
+        err.response?.data?.message ||
+        err.response?.data?.error?.message ||
+        err.message ||
+        'Failed to create job posting';
+      addToast(errMsg, 'error');
     } finally {
       setLoading(false);
     }
@@ -57,6 +112,39 @@ export const CreateJobModal: React.FC<CreateJobModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Post New Job Opening" maxWidth="max-w-2xl">
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Company Selector */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-semibold text-slate-700 uppercase">
+              Hiring Company <span className="text-red-500">*</span>
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsCreatingNewCompany(!isCreatingNewCompany)}
+              className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              {isCreatingNewCompany ? 'Select Existing Company' : '+ Add New Company'}
+            </button>
+          </div>
+
+          {isCreatingNewCompany || companies.length === 0 ? (
+            <Input
+              placeholder="e.g. Acme Corp or Tech Innovations Ltd"
+              value={newCompanyName}
+              onChange={(e) => setNewCompanyName(e.target.value)}
+              required={isCreatingNewCompany}
+            />
+          ) : (
+            <Select
+              value={formData.companyId}
+              onChange={(e) => setFormData({ ...formData, companyId: e.target.value })}
+              options={companies.map((c) => ({
+                label: c.name,
+                value: c.id,
+              }))}
+            />
+          )}
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
             label="Job Title"
