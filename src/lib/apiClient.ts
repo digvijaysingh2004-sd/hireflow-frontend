@@ -1,8 +1,9 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { authStorage } from './authStorage';
 
-const IDENTITY_BASE_URL = import.meta.env.VITE_IDENTITY_API_BASE_URL || 'http://localhost:5001';
-const HIRING_BASE_URL = import.meta.env.VITE_HIRING_API_BASE_URL || 'http://localhost:5002';
+const IDENTITY_BASE_URL = import.meta.env.VITE_IDENTITY_API_BASE_URL || 'http://localhost:5218';
+const HIRING_BASE_URL = import.meta.env.VITE_HIRING_API_BASE_URL || 'http://localhost:5104';
+export const NOTIFICATION_BASE_URL = import.meta.env.VITE_NOTIFICATION_API_BASE_URL || 'http://localhost:5289';
 
 export function generateCorrelationId(): string {
   return typeof crypto !== 'undefined' && crypto.randomUUID
