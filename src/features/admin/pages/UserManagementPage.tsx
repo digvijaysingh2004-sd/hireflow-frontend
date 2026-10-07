@@ -7,16 +7,20 @@ import { Input } from '../../../components/ui/Input';
 import { DataTable, Column } from '../../../components/ui/DataTable';
 import { Modal } from '../../../components/ui/Modal';
 import { useToast } from '../../../components/ui/ToastContext';
-import { Users, Search, Shield, UserCheck, UserX, Check } from 'lucide-react';
+import { Users, Search, Shield, UserCheck, UserX, Check, Trash2, AlertTriangle } from 'lucide-react';
 import { AdminUserItem } from '../types';
 import { UserRole } from '../../auth/types';
+import { useAuth } from '../../auth/hooks/useAuth';
 
 export const UserManagementPage: React.FC = () => {
   const { addToast } = useToast();
+  const { user: currentUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [editingUser, setEditingUser] = useState<AdminUserItem | null>(null);
+  const [userToDelete, setUserToDelete] = useState<AdminUserItem | null>(null);
   const [selectedRoles, setSelectedRoles] = useState<UserRole[]>([]);
   const [updating, setUpdating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['admin-users'],
@@ -27,17 +31,36 @@ export const UserManagementPage: React.FC = () => {
 
   const filteredUsers = users.filter((u) => {
     if (!searchTerm.trim()) return true;
-    return u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const emailMatch = u.email?.toLowerCase().includes(term);
+    const firstNameMatch = u.firstName?.toLowerCase().includes(term);
+    const lastNameMatch = u.lastName?.toLowerCase().includes(term);
+    return emailMatch || firstNameMatch || lastNameMatch;
   });
 
   const handleToggleStatus = async (user: AdminUserItem) => {
     const nextStatus = !user.isActive;
     try {
       await adminApi.updateUserStatus(user.id, nextStatus);
-      addToast(`User ${user.email} is now ${nextStatus ? 'Active' : 'Inactive'}`, 'success');
+      addToast(`User ${user.email} is now ${nextStatus ? 'Enabled' : 'Disabled'}`, 'success');
       refetch();
     } catch (err: any) {
-      addToast(err.response?.data?.error?.message || 'Failed to update user status', 'error');
+      addToast(err.response?.data?.message || err.response?.data?.error?.message || 'Failed to update user status', 'error');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!userToDelete) return;
+    setDeleting(true);
+    try {
+      await adminApi.deleteUser(userToDelete.id);
+      addToast(`User ${userToDelete.email} has been permanently deleted`, 'success');
+      setUserToDelete(null);
+      refetch();
+    } catch (err: any) {
+      addToast(err.response?.data?.message || err.response?.data?.error?.message || 'Failed to delete user', 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -107,42 +130,62 @@ export const UserManagementPage: React.FC = () => {
       header: 'Account Status',
       accessor: (u) => (
         <Badge variant={u.isActive ? 'success' : 'danger'} size="sm">
-          {u.isActive ? 'Active' : 'Disabled'}
+          {u.isActive ? 'Enabled' : 'Disabled'}
         </Badge>
       ),
     },
     {
       header: 'Created Date',
-      accessor: (u) => (
-        <span className="text-xs text-slate-500">
-          {u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}
-        </span>
-      ),
+      accessor: (u) => {
+        const dateStr = u.createdAtUtc || u.createdAt;
+        return (
+          <span className="text-xs text-slate-500">
+            {dateStr ? new Date(dateStr).toLocaleDateString() : 'N/A'}
+          </span>
+        );
+      },
     },
     {
       header: 'Actions',
-      accessor: (u) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon={<Shield className="w-3.5 h-3.5" />}
-            onClick={() => handleOpenRoleModal(u)}
-          >
-            Manage Roles
-          </Button>
+      accessor: (u) => {
+        const isSelf = currentUser?.id === u.id;
+        return (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              leftIcon={<Shield className="w-3.5 h-3.5" />}
+              onClick={() => handleOpenRoleModal(u)}
+            >
+              Manage Roles
+            </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className={u.isActive ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'}
-            icon={u.isActive ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
-            onClick={() => handleToggleStatus(u)}
-          >
-            {u.isActive ? 'Disable' : 'Enable'}
-          </Button>
-        </div>
-      ),
+            <Button
+              variant="ghost"
+              size="sm"
+              className={u.isActive ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'}
+              leftIcon={u.isActive ? <UserX className="w-3.5 h-3.5" /> : <UserCheck className="w-3.5 h-3.5" />}
+              onClick={() => handleToggleStatus(u)}
+              disabled={isSelf}
+              title={isSelf ? 'Cannot disable your own account' : undefined}
+            >
+              {u.isActive ? 'Disable' : 'Enable'}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+              onClick={() => setUserToDelete(u)}
+              disabled={isSelf}
+              title={isSelf ? 'Cannot delete your own account' : undefined}
+            >
+              Delete
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -174,7 +217,7 @@ export const UserManagementPage: React.FC = () => {
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
-        <DataTable
+        <DataTable<AdminUserItem>
           columns={columns}
           data={filteredUsers}
           isLoading={isLoading}
@@ -189,7 +232,7 @@ export const UserManagementPage: React.FC = () => {
           isOpen={!!editingUser}
           onClose={() => setEditingUser(null)}
           title={`Assign Roles: ${editingUser.email}`}
-          maxWidth="max-w-md"
+          maxWidth="md"
         >
           <form onSubmit={handleSaveRoles} className="space-y-4">
             <p className="text-xs text-slate-500">
@@ -233,6 +276,46 @@ export const UserManagementPage: React.FC = () => {
               </Button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Delete User Confirmation Modal */}
+      {userToDelete && (
+        <Modal
+          isOpen={!!userToDelete}
+          onClose={() => setUserToDelete(null)}
+          title="Delete User Account"
+          maxWidth="md"
+        >
+          <div className="space-y-4">
+            <div className="p-3 bg-red-50 rounded-xl border border-red-200 flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div className="text-xs text-red-800">
+                <p className="font-semibold mb-0.5">Warning: This action cannot be undone</p>
+                <p>
+                  Permanently deletes this user account, removes all role assignments, and revokes active sessions.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-slate-600">
+              Are you sure you want to delete user <strong className="text-slate-900 font-semibold">{userToDelete.email}</strong>?
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="secondary" onClick={() => setUserToDelete(null)}>
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="danger"
+                isLoading={deleting}
+                onClick={handleConfirmDelete}
+              >
+                Delete User
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </div>

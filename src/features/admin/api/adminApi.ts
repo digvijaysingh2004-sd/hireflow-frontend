@@ -61,4 +61,9 @@ export const adminApi = {
     const response = await identityClient.get('/api/v1/roles');
     return response.data.data || response.data;
   },
+
+  async deleteUser(userId: string): Promise<{ message: string }> {
+    const response = await identityClient.delete(`/api/v1/users/${userId}`);
+    return response.data;
+  },
 };

@@ -1,13 +1,25 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
+export type ModalMaxWidth =
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | '2xl'
+  | 'max-w-sm'
+  | 'max-w-md'
+  | 'max-w-lg'
+  | 'max-w-xl'
+  | 'max-w-2xl';
+
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
+  maxWidth?: ModalMaxWidth;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -34,17 +46,20 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  const widthMap = {
+  const widthMap: Record<string, string> = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
+    '2xl': 'max-w-2xl',
   };
+
+  const resolvedWidth = maxWidth.startsWith('max-w-') ? maxWidth : widthMap[maxWidth] || 'max-w-md';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
       <div
-        className={`bg-white rounded-xl shadow-xl w-full ${widthMap[maxWidth]} border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
+        className={`bg-white rounded-xl shadow-xl w-full ${resolvedWidth} border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">

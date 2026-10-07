@@ -3,11 +3,15 @@ import { UserRole } from '../auth/types';
 export interface AdminUserItem {
   id: string;
   email: string;
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
   roles: UserRole[];
   isActive: boolean;
-  isEmailVerified: boolean;
-  createdAtUtc: string;
+  isEmailVerified?: boolean;
+  createdAtUtc?: string;
+  createdAt?: string;
+  [key: string]: unknown;
 }
 
 export interface AdminUserFilterParams {
