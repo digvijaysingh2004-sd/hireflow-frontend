@@ -11,9 +11,12 @@ dist-ssr
 coverage
 *.lcov
 
-# Environment files (ONLY .env.example IS ALLOWED ON GITHUB)
+# Environment files & Secrets (ONLY .env.example IS ALLOWED ON GITHUB)
 .env*
 !.env.example
+passwords.md
+*.local
+*.secret
 
 # Markdown documentation (ONLY README.md IS ALLOWED ON GITHUB)
 *.md
