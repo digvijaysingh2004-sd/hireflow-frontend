@@ -18,6 +18,45 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function extractErrorMessage(err: unknown, defaultMessage: string): string {
+  if (err && typeof err === 'object') {
+    const errorObj = err as {
+      code?: string;
+      message?: string;
+      response?: {
+        data?: {
+          detail?: string;
+          message?: string;
+          errors?: string[] | Record<string, string[]>;
+        };
+      };
+    };
+
+    if (errorObj.response?.data) {
+      const data = errorObj.response.data;
+      if (data.detail) return data.detail;
+      if (data.message) return data.message;
+      if (Array.isArray(data.errors) && data.errors.length > 0) {
+        return data.errors.join(' ');
+      }
+      if (typeof data.errors === 'object' && data.errors !== null) {
+        const flatErrors = Object.values(data.errors).flat();
+        if (flatErrors.length > 0) return flatErrors.join(' ');
+      }
+    }
+
+    if (errorObj.code === 'ECONNABORTED' || errorObj.message?.toLowerCase().includes('timeout')) {
+      return 'Server is waking up or request timed out. Please retry.';
+    }
+
+    if (errorObj.message && errorObj.message !== 'Network Error') {
+      return errorObj.message;
+    }
+  }
+
+  return defaultMessage;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => authStorage.getUser());
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -55,13 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
       setUser(response.user);
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string; message?: string } } }).response?.data
-              ?.detail ||
-            (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-            'Failed to sign in. Please check your credentials.'
-          : 'Failed to sign in. Network or server error.';
+      const message = extractErrorMessage(err, 'Failed to sign in. Please check your credentials.');
       setError(message);
       throw new Error(message);
     } finally {
@@ -76,13 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { confirmPassword: _, ...payload } = data;
       await authApi.register(payload);
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string; message?: string } } }).response?.data
-              ?.detail ||
-            (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-            'Registration failed. Please try again.'
-          : 'Registration failed. Network error.';
+      const message = extractErrorMessage(err, 'Registration failed. Network or server error. Please try again.');
       setError(message);
       throw new Error(message);
     } finally {
@@ -105,13 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (err: unknown) {
-      const message =
-        err && typeof err === 'object' && 'response' in err
-          ? (err as { response?: { data?: { detail?: string; message?: string } } }).response?.data
-              ?.detail ||
-            (err as { response?: { data?: { message?: string } } }).response?.data?.message ||
-            'OTP verification failed. Invalid or expired code.'
-          : 'OTP verification failed. Network error.';
+      const message = extractErrorMessage(err, 'OTP verification failed. Invalid or expired code.');
       setError(message);
       throw new Error(message);
     } finally {

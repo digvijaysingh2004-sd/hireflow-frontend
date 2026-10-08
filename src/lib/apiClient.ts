@@ -16,7 +16,7 @@ export const identityClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 60000,
 });
 
 export const hiringClient = axios.create({
@@ -24,7 +24,7 @@ export const hiringClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 15000,
+  timeout: 60000,
 });
 
 // Flag to track whether token refresh is in progress
